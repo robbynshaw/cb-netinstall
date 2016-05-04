@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# General script setup
+
+# do not accept unset variables
+set -o nounset 
+
+# If not running in terminal, exit with message
+[[ -t 0 && -t 1 && -t 2 ]] || { echo "$0: This script must be run from a terminal" >&2; exit 1; }
+
+# Check for config file
+[[ -r config ]] || { echo "$0: Cannot find necessary file \"config\"" >&2; exit 1; }
+. config
+
+for i in log_dir backup_dir backup_suffix necessary_files replaced_dirs
+do
+    [[ $i ]] || { echo "$0: Config variable $i has not been set. Please check the \"config\" file." >&2; exit 1; }
+done
+
+install_backup_dir="${backup_dir}"/install
+echo -e "Backup Directory\t$install_backup_dir"
+snapshots_dir="${backup_dir}"/snapshots
+echo -e "Snapshots Directory\t$snapshots_dir"
+backup_dir="$install_backup_dir"
+echo -e "Backup Directory:\t$backup_dir"
+
+logfile=error.log # temporary logfile in installer directory
+echo -e "Logfile Directory:\t$logfile"
+
+user=$USER
+
+trap 'giveup "Script terminated." 1' 1 2 3 15
+[[ $user = root ]] && giveup "This script should be run by a normal user, not root" 1

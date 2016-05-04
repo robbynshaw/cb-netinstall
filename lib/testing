@@ -1,0 +1,19 @@
+#!/bin/bash
+#
+# Common testing functions
+
+net_test() {
+    tries=4
+    printf 'checking network connection... ' | tee -a "$logfile"
+    while [[ $tries -gt 0 ]]
+    do
+        wget -O - 'http://ftp.debian.org/debian/README' >/dev/null 2>&1 && {
+            msg '[OK]'
+            return 0
+        }
+        ((tries--))
+        sleep 1
+    done
+    msg '[FAILED]'
+    return 1
+}

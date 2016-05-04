@@ -1,0 +1,8 @@
+#!/bin/bash
+# 
+# Cleans up the fluff from a netinstall.
+
+. ./lib/common
+
+hello
+

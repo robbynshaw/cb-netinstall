@@ -1,0 +1,48 @@
+#!/bin/bash
+#
+# Common interactivity functions
+
+confirm() { # $1 is message, $2 is desired return value: 0 or 1 (passed to 'giveup')
+    echo "
+$1
+(press enter to continue, any other key to exit)
+" | tee -a "$logfile"
+    read -srn1
+    [[ $REPLY ]] && giveup "terminated by $user, goodbye!" $2
+    log "$user chose to continue"
+}
+
+option() {
+    echo "
+$1
+(press enter to agree, any other key to pass)
+" | tee -a "$logfile"
+    read -srn1
+    [[ $REPLY ]] && { log "$user did not agree"; return 1; }
+    log "$user agreed"
+    return 0
+}
+
+giveup() { # $1 is message, $2 is desired return value: 0 or 1
+    if [[ ${2:-1} = 0 ]]
+    then
+        bigmsg "$1"
+    else
+        errmsg "$1"
+    fi
+    [[ ${replaced_dirs[0]} != "none" ]] && {
+        for i in "${replaced_dirs[@]}"
+        do
+            sudo test -d "$i" || { # if dir has not been replaced by new version, put back the original backup
+                if sudo test -d  "${i%/*}"
+                then
+                    sudo test -d "${backup_dir}/$i" && sudo mv "${backup_dir}/$i" "${i%/*}" > >( tee -a "$logfile" ) 2>&1 || errmsg "Unable to restore missing folder $i ."
+                else
+                    errmsg "Cannot move $i to ${i%/*} : no such directory."
+                fi
+            }
+        done
+    }
+    echo "now exiting..."
+    exit ${2:-1}
+}

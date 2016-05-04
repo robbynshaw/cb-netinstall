@@ -1,0 +1,11 @@
+#!/bin/bash
+#
+# Common functions
+
+function hello {
+    echo howdy world
+}
+
+. ./lib/print
+. ./lib/interactive
+. ./lib/testing

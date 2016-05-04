@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# Common print functions
+
+msg() {
+    echo "$1" | tee -a "$logfile"
+}
+
+bigmsg() {
+    tput bold
+    echo "
+$1
+------------------------------------------------" | tee -a "$logfile"
+    tput sgr0
+    sleep 3
+}
+
+errmsg() {
+    tput bold
+    echo "######## ERROR ########
+$1
+------------------------------------------------" | tee -a "$logfile" >&2
+    tput sgr0
+    sleep 4
+}
+
+log() {
+    echo "$1" >> "$logfile"
+}
+
+warnlog() {
+    echo "######## WARNING ########
+$1
+------------------------------------------------" >> "$logfile"
+}
