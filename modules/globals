@@ -1,0 +1,34 @@
+#!/bin/bash
+#
+# Global variable setup
+
+# do not accept unset variables
+set -o nounset 
+
+# Check for config file
+[[ -r config ]] || { echo "$0: Cannot find necessary file \"config\"" >&2; exit 1; }
+. config
+
+for i in log_dir backup_dir backup_suffix necessary_files replaced_dirs
+do
+    [[ $i ]] || { echo "$0: Config variable $i has not been set. Please check the \"config\" file." >&2; exit 1; }
+done
+
+# Setup global config dictionary
+declare -A globals
+
+globals=(["install_backup_dir"]="${backup_dir}"/install)
+echo -e "Backup Directory\t${globals["install_backup_dir"]}"
+
+globals["snapshots_dir"]="${backup_dir}"/snapshots
+echo -e "Snapshots Directory\t${globals["snapshots_dir"]}"
+
+globals["backup_dir"]="${globals["install_backup_dir"]}"
+echo -e "Backup Directory:\t${globals["backup_dir"]}"
+
+# temporary logfile in installer directory
+globals["logfile"]=error.log
+echo -e "Logfile Directory:\t${globals["logfile"]}"
+
+globals["user"]="$USER"
+user=$USER

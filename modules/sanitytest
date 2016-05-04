@@ -1,0 +1,45 @@
+#!/bin/bash
+#
+# General sanity checking
+
+bigmsg "General Sanity Checks"
+# If not running in terminal, exit with message
+[[ -t 0 && -t 1 && -t 2 ]] || { echo "$0: This script must be run from a terminal" >&2; exit 1; }
+
+# Check for needed files
+missing_files=
+for i in "${necessary_files[@]}"
+do
+    [[ -r $i ]] || missing_files+=" $i"
+done
+[[ $missing_files ]] && giveup "Some necessary files or folders were missing: $missing_files" 1 || msg "Necessary files: OK" 
+
+trap 'giveup "Script terminated." 1' 1 2 3 15
+[[ $user = root ]] && giveup "This script should be run by a normal user, not root" 1
+# Check network
+net_test || giveup "You do not seem to have a working network connection.
+Please fix this issue and run the script again." 1
+
+# Check debian version FIXME Is /etc/debian_version the best way?
+#grep -q '\(wheezy\|\(^\|[^a-zA-Z0-9.]\)7\($\|[^a-zA-Z0-9]\)\)' /etc/debian_version && msg "Debian version: OK"|| { warnlog "/etc/debian_version reads: $(cat /etc/debian_version)"
+#    confirm "You do not appear to have Debian Wheezy installed.
+#If you think this is incorrect,
+#you may wish to continue with the installation,
+#otherwise it would be safer to stop.
+#Would you like to continue anyway?" 1; }
+
+# is X already installed? FIXME Is this the best way to check if there is a desktop system installed already?
+hash startx > /dev/null 2>&1 && { warnlog "Command 'startx' is available. Desktop system already installed?"
+    confirm "You seem to have some kind of desktop environment already installed.
+If you continue with this CrunchBang installation you may have problems,
+or even end up with an unusable system.
+Would you like to continue anyway?" 1; }
+
+# can use sudo?
+echo "
+You will need your password to perform certain system tasks.
+Please enter it now and it will be stored for a while.
+(You may need to enter it again later.)"
+sudo -v || giveup "You do not appear to have permission to use sudo,
+which is needed in this script.
+Please make the necessary adjustments to your system and try again." 1

@@ -2,6 +2,9 @@
 #
 # Global variables
 
+# do not accept unset variables
+set -o nounset 
+
 # Check for config file
 [[ -r config ]] || { echo "$0: Cannot find necessary file \"config\"" >&2; exit 1; }
 . config
@@ -12,12 +15,13 @@ do
 done
 
 install_backup_dir="${backup_dir}"/install
-echo Backup Directory\t$install_backup_dir
+echo -e "Backup Directory\t$install_backup_dir"
 snapshots_dir="${backup_dir}"/snapshots
-echo Snapshots Directory\t$snapshots_dir
+echo -e "Snapshots Directory\t$snapshots_dir"
 backup_dir="$install_backup_dir"
-echo Backup Directory:\t$backup_dir
+echo -e "Backup Directory:\t$backup_dir"
 
 logfile=error.log # temporary logfile in installer directory
-echo Logfile Directory:\t$logfile
+echo -e "Logfile Directory:\t$logfile"
+
 user=$USER

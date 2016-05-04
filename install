@@ -25,12 +25,14 @@
 
 clear
 
-# Configure environment
-. ./modules/setup
+# Set global variables
+# Makes a global dictionary available ($globals)
+. ./modules/variables
 
 # Load common functions
 . ./lib/common
-confirm "This is your environment setup. Is this okay?" 0
+
+confirm "Pausing for you to take a look." 0
 
 log "
 ########################################################################
@@ -48,57 +50,15 @@ installation of the Debian CORE SYSTEM ONLY.
 (See \"Debian Netinstall Hints\" in the README file.)
 "
 confirm "Would you like to start the install now?" 0
+clear
 
-# Check network
-net_test || giveup "You do not seem to have a working network connection.
-Please fix this issue and run the script again." 1
+# Check if everything looks sane
+. ./modules/sanitytest
 
-# Check for needed files
-missing_files=
-for i in "${necessary_files[@]}"
-do
-    [[ -r $i ]] || missing_files+=" $i"
-done
-[[ $missing_files ]] && giveup "Some necessary files or folders were missing: $missing_files" 1 || msg "Necessary files: OK"
-
-# setup logfile
-[[ -d "$log_dir" ]] || { cp -r cb-netinstall-logs "$log_dir" || giveup "failed to copy logfiles directory into $HOME" 1; }
-cat "$logfile" >> "$log_dir"/install.log
-rm "$logfile" # finished with temporary logfile
-logfile="$log_dir"/install.log # this logfile will remain after the install
-bigmsg "messages are being saved to $logfile"
-cp -f pkgs-manual pkgs-norecs pkgs-auto config undo "$log_dir"
-
-# check debian version FIXME Is /etc/debian_version the best way?
-grep -q '\(wheezy\|\(^\|[^a-zA-Z0-9.]\)7\($\|[^a-zA-Z0-9]\)\)' /etc/debian_version && msg "Debian version: OK"|| { warnlog "/etc/debian_version reads: $(cat /etc/debian_version)"
-    confirm "You do not appear to have Debian Wheezy installed.
-If you think this is incorrect,
-you may wish to continue with the installation,
-otherwise it would be safer to stop.
-Would you like to continue anyway?" 1; }
-
-# is X already installed? FIXME Is this the best way to check if there is a desktop system installed already?
-hash startx > /dev/null 2>&1 && { warnlog "Command 'startx' is available. Desktop system already installed?"
-    confirm "You seem to have some kind of desktop environment already installed.
-If you continue with this CrunchBang installation you may have problems,
-or even end up with an unusable system.
-Would you like to continue anyway?" 1; }
-
-# can use sudo?
-echo "
-You will need your password to perform certain system tasks.
-Please enter it now and it will be stored for a while.
-(You may need to enter it again later.)"
-sudo -v || giveup "You do not appear to have permission to use sudo,
-which is needed in this script.
-Please make the necessary adjustments to your system and try again." 1
-
-# initial tweaking
-bigmsg "Adjusting some system settings."
-[[ -r preinstall_commands ]] && {
-    . preinstall_commands
-}
-
+# Configure environment
+bigmsg "Setting up the environment"
+. ./modules/setup
+exit
 bigmsg "Upgrading system before install
 (this may take a little while)"
 
